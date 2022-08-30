@@ -32,7 +32,7 @@ app.get('/', (req, res) => {
     code_challenge: codeChallenge,
     code_challenge_method: 'S256',
   })
-  res.send(`Hello! <a href="${authUrl}">Create database at Neon</a>`)
+  res.send(`Hello! <a href="#" onclick="window.open('${authUrl}', 'popup', 'width=800,height=600')">Create database at Neon</a>`)
 })
 
 // Callback to catch OAuth redirect and ask API for project connection string
