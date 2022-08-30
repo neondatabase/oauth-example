@@ -1,6 +1,7 @@
 import express from 'express'
 import axios from 'axios';
 import {Issuer, generators} from 'openid-client'
+import session from 'express-session'
 
 const app = express()
 
@@ -15,6 +16,9 @@ const codeVerifier = generators.codeVerifier()
 const codeChallenge = generators.codeChallenge(codeVerifier)
 
 const getProtocol = (host) => (host.startsWith('localhost') || host.startsWith('127.0.0.1')) ? 'http' : 'https'
+
+app.set('view engine', 'pug')
+app.use(session({ secret: 'sdkl;fjqew4jrpofsdnfadsfas', cookie: {}, saveUninitialized: true, resave: true }))
 
 // Show index page with link to Neon project creation
 app.get('/', async (req, res) => {
@@ -36,7 +40,16 @@ app.get('/', async (req, res) => {
     code_challenge: codeChallenge,
     code_challenge_method: 'S256',
   })
-  res.send(`Hello! <a href="#" onclick="window.open('${authUrl}', 'popup', 'width=800,height=600')">Create database at Neon</a>`)
+  res.render('index', {authUrl})
+})
+
+app.get('/dsn', async (req, res) => {
+  res.send({ dsn: req.session.dsn })
+});
+
+app.get('/forget', async (req, res) => {
+  req.session.dsn = null
+  res.redirect('/')
 })
 
 // Callback to catch OAuth redirect and ask API for project connection string
@@ -72,7 +85,8 @@ app.get('/callback', async (req, res) => {
 
     const dbname = project.databases[0].name
     // Okay, we can show connection string
-    res.send(`Done: you can connect to '${dsn_with_pass}/${dbname}'`)
+    req.session.dsn = `${dsn_with_pass}/${dbname}`;
+    res.render('callback');
   } catch (e) {
     console.error('FAILED TO OAUTH', e);
   }

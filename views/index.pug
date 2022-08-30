@@ -1,0 +1,25 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="utf-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1")
+    title OAuth example
+  body
+    h1 Hello!
+    a(href="#" onclick=`window.open('${authUrl}', 'popup', 'width=800,height=600')`) Create database at Neon
+    p#dsn Waiting for auth
+    script.
+      function checkDsn() {
+        fetch('/dsn')
+          .then(res => res.json())
+          .then(data => {
+            if (data.dsn) {
+              document.getElementById('dsn').innerText = 'Connection string: ' + data.dsn
+            } else {
+              setTimeout(checkDsn, 1000)
+            }
+          })
+      }
+      checkDsn()
+
+    a(href="/forget") Forget
