@@ -5,27 +5,28 @@ import {Issuer, generators} from 'openid-client'
 const app = express()
 
 const listen_port = process.env.PORT || 5555
-const redirect_uri = `http://127.0.0.1:${listen_port}/callback`
 
 const neon_oauth_url = 'https://oauth2.stage.neon.tech'
 const neon_api_url = 'https://console.stage.neon.tech/api/v1'
 
-// Instantiate OAuth client
-let neonIssuer = await Issuer.discover(neon_oauth_url)
-const neonOAuthClient = new neonIssuer.Client({
-  client_id: process.env.NEON_OAUTH_ID,
-  redirect_uris: [redirect_uri],
-  response_types: ['code'],
-  client_secret: process.env.NEON_OAUTH_SECRET,
-})
-
-// Store the code_verifier in memory
-const state = generators.state()
-const codeVerifier = generators.codeVerifier()
-const codeChallenge = generators.codeChallenge(codeVerifier)
-
 // Show index page with link to Neon project creation
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
+  // Instantiate OAuth client
+  const redirect_uri = req.protocol + '://' + req.get('host') + '/callback'
+
+  let neonIssuer = await Issuer.discover(neon_oauth_url)
+  const neonOAuthClient = new neonIssuer.Client({
+    client_id: process.env.NEON_OAUTH_ID,
+    redirect_uris: [redirect_uri],
+    response_types: ['code'],
+    client_secret: process.env.NEON_OAUTH_SECRET,
+  })
+
+  // Store the code_verifier in memory
+  const state = generators.state()
+  const codeVerifier = generators.codeVerifier()
+  const codeChallenge = generators.codeChallenge(codeVerifier)
+
   const authUrl = neonOAuthClient.authorizationUrl({
     scope: `openid offline`,
     state,
@@ -37,7 +38,8 @@ app.get('/', (req, res) => {
 
 // Callback to catch OAuth redirect and ask API for project connection string
 app.get('/callback', async (req, res) => {
-  
+
+  const redirect_uri = req.protocol + '://' + req.get('host') + '/callback'
   // finish OAuth and get access_token
   const params = neonOAuthClient.callbackParams(req);
   const tokenSet = await neonOAuthClient.callback(redirect_uri, params, { code_verifier: codeVerifier, state });
