@@ -44,11 +44,12 @@ app.get('/', async (req, res) => {
 })
 
 app.get('/dsn', async (req, res) => {
-  res.send({ dsn: req.session.dsn })
+  res.send({ dsn: req.session.dsn, error: req.session.error })
 });
 
 app.get('/forget', async (req, res) => {
   req.session.dsn = null
+  req.session.error = null
   res.redirect('/')
 })
 
@@ -86,9 +87,12 @@ app.get('/callback', async (req, res) => {
     const dbname = project.databases[0].name
     // Okay, we can show connection string
     req.session.dsn = `${dsn_with_pass}/${dbname}`;
-    res.render('callback');
   } catch (e) {
+    req.session.dsn = null;
+    req.session.error = e.response?.data?.message || e.message;
     console.error('FAILED TO OAUTH', e);
+  } finally {
+    res.render('callback');
   }
 })
 

@@ -13,7 +13,9 @@ html(lang="en")
         fetch('/dsn')
           .then(res => res.json())
           .then(data => {
-            if (data.dsn) {
+            if (data.error) {
+              document.getElementById('dsn').innerText = data.error
+            } else if (data.dsn) {
               document.getElementById('dsn').innerText = 'Connection string: ' + data.dsn
             } else {
               setTimeout(checkDsn, 1000)
