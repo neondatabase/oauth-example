@@ -4,7 +4,7 @@ import {Issuer, generators} from 'openid-client'
 
 const app = express()
 
-const listen_port = 5555
+const listen_port = process.env.PORT || 5555
 const redirect_uri = `http://127.0.0.1:${listen_port}/callback`
 
 const neon_oauth_url = 'https://oauth2.stage.neon.tech'
