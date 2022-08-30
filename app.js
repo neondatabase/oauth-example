@@ -13,7 +13,7 @@ const neon_api_url = 'https://console.stage.neon.tech/api/v1'
 app.get('/', async (req, res) => {
   // Instantiate OAuth client
   console.log('GOT REQUEST', req.url)
-  const redirect_uri = req.protocol + '://' + req.get('host') + '/callback'
+  const redirect_uri = (req.get('host').startsWith('localhost') ? 'http' : 'https') + '://' + req.get('host') + '/callback'
   console.log('REDIRECT URL IS:', redirect_uri);
 
   let neonIssuer = await Issuer.discover(neon_oauth_url)
@@ -42,7 +42,7 @@ app.get('/', async (req, res) => {
 app.get('/callback', async (req, res) => {
   console.log('GOT CB REQUEST', req.url)
 
-  const redirect_uri = req.protocol + '://' + req.get('host') + '/callback'
+  const redirect_uri = (req.get('host').startsWith('localhost') ? 'http' : 'https') + '://' + req.get('host') + '/callback'
   console.log('REDIRECT URL IS:', redirect_uri);
   try {
     // finish OAuth and get access_token
